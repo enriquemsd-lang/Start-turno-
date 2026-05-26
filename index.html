@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#00e676">
+  <meta name="description" content="Monitor de Máquinas V5 - Controle de Produção em Tempo Real">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MonitorV5">
+  <link rel="apple-touch-icon" href="icon-192x192.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+  <title>Monitor Máquinas V5</title>
+</head>
+<body>
+
+<!-- NOTIFICAÇÃO TOAST -->
+<div id="toast"></div>
+
+<!-- DIÁLOGO DE CONFIRMAÇÃO -->
+<div id="dlg-overlay">
+  <div class="dlg-box">
+    <div class="dlg-msg" id="dlg-msg">Confirmar?</div>
+    <div class="dlg-btns">
+      <button class="mcancel" onclick="dlgResp(false)">CANCELAR</button>
+      <button class="mconfirm" id="dlg-ok" style="background:#ff1744;">CONFIRMAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- TELA DE LOGIN -->
+<div id="login" class="scr on">
+  <div class="logo">🏭</div>
+  <div class="l-title">MONITOR DE MÁQUINAS</div>
+  <div class="l-sub">CONTROLE DE PRODUÇÃO · V5</div>
+  <div style="width:100%;max-width:400px;">
+    <div class="fg">
+      <label>DATA</label>
+      <input type="date" id="l-data" class="finput">
+    </div>
+    <div class="fg">
+      <label>TURNO</label>
+      <select id="l-turno" class="finput">
+        <option>1° Turno</option>
+        <option>2° Turno</option>
+        <option>3° Turno</option>
+        <option>Administrativo</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>RESPONSÁVEL</label>
+      <input type="text" id="l-resp" class="finput" placeholder="Nome do responsável...">
+    </div>
+    <button class="btn-enter" onclick="entrar()">▶ ENTRAR</button>
+  </div>
+</div>
+
+<!-- MODO TV -->
+<div id="tv-scr" onclick="sairTV()">
+  <div style="text-align:center;margin-bottom:10px;">
+    <div style="color:#00e676;font-size:12px;letter-spacing:2px;" id="tv-title">MONITOR DE MÁQUINAS</div>
+    <div style="color:#0a1a0a;font-size:9px;margin-top:2px;">Toque para sair · <span id="tv-time"></span></div>
+  </div>
+  <div class="tv-kpis" id="tv-kpis"></div>
+  <div id="tv-grupos"></div>
+</div>
+
+<!-- TELA PRINCIPAL -->
+<div id="main" class="scr">
+  <div id="hdr">
+    <div class="hdr-top">
+      <div>
+        <div class="hdr-title">MONITOR DE MÁQUINAS</div>
+        <div class="hdr-sub">CONTROLE DE PRODUÇÃO · V5</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="hdr-badge">ATIVO</div>
+        <div class="hdr-time" id="hdr-time">--:--</div>
+      </div>
+    </div>
+    <div class="hdr-info">
+      <span>👤 <span id="h-resp">—</span></span>
+      <span>·</span>
+      <span id="h-turno">—</span>
+      <span>·</span>
+      <span id="h-data">—</span>
+      <button class="btn-cfg" onclick="showCfg()">⚙ CONFIG</button>
+    </div>
+  </div>
+
+  <div id="content">
+    <!-- KPIs -->
+    <div class="kpi-grid" id="kpis"></div>
+
+    <!-- Gráfico -->
+    <div class="chart-box">
+      <div class="slbl">STATUS DAS MÁQUINAS</div>
+      <div class="bar-chart" id="barchart"></div>
+    </div>
+
+    <!-- Legenda -->
+    <div class="legend" id="legend"></div>
+
+    <!-- Filtros -->
+    <div class="filters" id="filters"></div>
+
+    <!-- Ações Principais -->
+    <div class="act-grid">
+      <button class="abtn" style="color:#00e676;border-color:#00e67655;" onclick="showAdd()">
+        <span class="ico">➕</span>NOVA MÁQUINA
+      </button>
+      <button class="abtn" style="color:#25D366;border-color:#25D36655;" onclick="enviarWA()">
+        <span class="ico">💬</span>ENVIAR AO GRUPO
+      </button>
+      <button class="abtn" style="color:#2979ff;border-color:#2979ff55;" onclick="modoTV()">
+        <span class="ico">📺</span>MODO TV
+      </button>
+    </div>
+
+    <!-- Ações Secundárias -->
+    <div class="act-grid" style="margin-top:8px;margin-bottom:14px;">
+      <button class="abtn" style="color:#ff9100;border-color:#ff910055;" onclick="zerarStatus()">
+        <span class="ico">🔄</span>ZERAR STATUS
+      </button>
+      <button class="abtn" style="color:#78909c;border-color:#78909c55;" onclick="exportCSV()">
+        <span class="ico">📊</span>EXPORTAR CSV
+      </button>
+      <button class="abtn" style="color:#ff1744;border-color:#ff174455;" onclick="limparTudo()">
+        <span class="ico">🗑️</span>LIMPAR TUDO
+      </button>
+    </div>
+
+    <!-- Busca -->
+    <input type="text" id="search" class="sinput" placeholder="🔍 Buscar código ou nome..." oninput="renderList()">
+
+    <!-- Cabeçalho da Lista -->
+    <div class="tbl-hdr-row">
+      <div class="tbl-title">EQUIPAMENTOS</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="tbl-info"><span id="cnt-s">0</span> de <span id="cnt-t">0</span></div>
+        <button class="btn-add" onclick="showAdd()">+ ADICIONAR</button>
+      </div>
+    </div>
+
+    <!-- Lista de Máquinas -->
+    <div class="mlist">
+      <div class="mlist-head">
+        <div>#</div>
+        <div>EQUIPAMENTO</div>
+        <div>STATUS</div>
+        <div style="text-align:right;">T.PAR</div>
+      </div>
+      <div id="mlist"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: NOVA MÁQUINA -->
+<div class="overlay" id="mod-add">
+  <div class="mbox" onclick="event.stopPropagation()">
+    <div class="mtitle">NOVA MÁQUINA</div>
+    <div class="fg">
+      <label>CÓDIGO</label>
+      <input type="text" id="a-cod" class="finput" placeholder="Ex: 2910199" inputmode="numeric">
+    </div>
+    <div class="fg">
+      <label>NOME DO EQUIPAMENTO</label>
+      <input type="text" id="a-nome" class="finput" placeholder="Ex: HS CORTE LASER 172" onkeydown="if(event.key==='Enter')addMaq()">
+    </div>
+    <div class="mbtns">
+      <button class="mcancel" onclick="closeOv('mod-add')">CANCELAR</button>
+      <button class="mconfirm" onclick="addMaq()">ADICIONAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CONFIGURAÇÕES -->
+<div class="overlay" id="mod-cfg">
+  <div class="mbox" onclick="event.stopPropagation()">
+    <div class="mtitle">CONFIGURAÇÕES</div>
+    <div class="fg">
+      <label>DATA</label>
+      <input type="date" id="c-data" class="finput">
+    </div>
+    <div class="fg">
+      <label>TURNO</label>
+      <select id="c-turno" class="finput">
+        <option>1° Turno</option>
+        <option>2° Turno</option>
+        <option>3° Turno</option>
+        <option>Administrativo</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>RESPONSÁVEL</label>
+      <input type="text" id="c-resp" class="finput">
+    </div>
+    <div class="mbtns">
+      <button class="mcancel" onclick="closeOv('mod-cfg')">CANCELAR</button>
+      <button class="mconfirm" onclick="saveCfg()">SALVAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCRIPTS -->
+<script src="app.js"></script>
+<script>
+  // Registrar Service Worker para PWA
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js').then(reg => {
+      console.log('✅ Service Worker registrado com sucesso');
+    }).catch(err => {
+      console.log('⚠️ Erro ao registrar Service Worker:', err);
+    });
+  }
+</script>
+
+</body>
+</html>
