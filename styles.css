@@ -555,6 +555,7 @@ input, select, button, textarea {
 }
 
 .sbtn {
+  background: #080c08;
   border-radius: 6px;
   font-size: 8px;
   padding: 4px 6px;
