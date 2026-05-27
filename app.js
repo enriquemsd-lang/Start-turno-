@@ -638,6 +638,11 @@ function modoTV() {
   document.getElementById("tv-time").textContent = tstr();
 }
 
+function voltarHome() {
+  showScreen("login");
+  dd = null;
+}
+
 function sairTV() {
   const e = document.getElementById("tv-scr");
   e.classList.remove("on");
