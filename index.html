@@ -24,7 +24,7 @@
     <div class="dlg-msg" id="dlg-msg">Confirmar?</div>
     <div class="dlg-btns">
       <button class="mcancel" onclick="dlgResp(false)">CANCELAR</button>
-      <button class="mconfirm" id="dlg-ok" style="background:#ff1744;">CONFIRMAR</button>
+      <button class="mconfirm" id="dlg-ok" style="background:#ff1744;" onclick="dlgResp(true)">CONFIRMAR</button>
     </div>
   </div>
 </div>
@@ -46,6 +46,18 @@
         <option>2° Turno</option>
         <option>3° Turno</option>
         <option>Administrativo</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>GRUPO</label>
+      <select id="l-grupo" class="finput">
+        <option value="">— Todos os grupos —</option>
+        <option>Roll Forming</option>
+        <option>Prensas</option>
+        <option>Laser's</option>
+        <option>Solda Rocker</option>
+        <option>Solda MQQ/SCANIA</option>
+        <option>Solda GEM</option>
       </select>
     </div>
     <div class="fg">
@@ -85,6 +97,8 @@
       <span id="h-turno">—</span>
       <span>·</span>
       <span id="h-data">—</span>
+      <span>·</span>
+      <span style="color:#00e676;">👥 <span id="h-grupo">—</span></span>
       <button class="btn-cfg" onclick="showCfg()">⚙ CONFIG</button>
     </div>
   </div>
@@ -175,6 +189,24 @@
   </div>
 </div>
 
+<!-- MODAL: MO DESLOCADA -->
+<div class="overlay" id="mod-mo">
+  <div class="mbox" onclick="event.stopPropagation()">
+    <div class="mtitle" style="color:#ffd600;">🟡 MO DESLOCADA</div>
+    <div class="fg">
+      <label>PARA ONDE A MO FOI DESLOCADA? *</label>
+      <input type="text" id="mo-dest" class="finput" placeholder="Ex: Linha 5, Suporte produção..." onkeydown="if(event.key==='Enter')confirmMODesloc()">
+    </div>
+    <div style="font-size:10px;color:#555;margin-top:-8px;margin-bottom:12px;">
+      ⚠️ Campo obrigatório
+    </div>
+    <div class="mbtns">
+      <button class="mcancel" onclick="closeOv('mod-mo')">CANCELAR</button>
+      <button class="mconfirm" style="background:linear-gradient(135deg,#ffd600,#ff9100);color:#000;" onclick="confirmMODesloc()">CONFIRMAR</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: CONFIGURAÇÕES -->
 <div class="overlay" id="mod-cfg">
   <div class="mbox" onclick="event.stopPropagation()">
@@ -206,12 +238,11 @@
 <!-- SCRIPTS -->
 <script src="app.js"></script>
 <script>
-  // Registrar Service Worker para PWA
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('service-worker.js').then(reg => {
-      console.log('✅ Service Worker registrado com sucesso');
+      console.log('✅ Service Worker registrado');
     }).catch(err => {
-      console.log('⚠️ Erro ao registrar Service Worker:', err);
+      console.log('⚠️ Erro Service Worker:', err);
     });
   }
 </script>
