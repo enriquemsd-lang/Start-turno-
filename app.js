@@ -569,6 +569,8 @@ function limparTudo() {
     save();
     fil = "Todos";
     renderList();
+    const cntAus = document.getElementById("cnt-aus");
+    if (cntAus) cntAus.textContent = "0";
     toast("🗑️ Dados limpos!");
   });
 }
