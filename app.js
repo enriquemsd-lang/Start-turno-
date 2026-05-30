@@ -590,12 +590,18 @@ function exportCSV() {
 function enviarWA() {
   const c = cnt();
   const lista = getMqs();
+  const iconeTipo = { "Falta": "❌", "Férias": "🏖️", "MO Deslocada": "🔀" };
+
   let t = `*MONITOR DE MÁQUINAS V5*\n📅 ${cfg.data}\n🕐 ${cfg.turno}`;
   if (cfg.grupo) t += `\n👥 *Grupo:* ${cfg.grupo}`;
   if (cfg.resp) t += `\n👤 *Responsável:* ${cfg.resp}`;
-  t += `\n\n━━━━━━━━━━━━━━━━━━━━\n📊 *RESUMO*\n`;
+
+  // Resumo de status
+  t += `\n\n━━━━━━━━━━━━━━━━━━━━\n📊 *RESUMO DE STATUS*\n`;
   SS.forEach(s => c[s] > 0 && (t += `${ST[s].wa} ${s}: ${c[s]}\n`));
   t += `📦 Total: ${lista.length}\n`;
+
+  // Detalhes por status
   SS.forEach(st => {
     const g = lista.filter(m => m.status === st);
     if (!g.length) return;
@@ -604,7 +610,47 @@ function enviarWA() {
       t += `• [${m.cod}] ${m.nome}${m.obs ? " — _" + m.obs + "_" : ""}\n`;
     });
   });
-  t += `\n_Gerado automaticamente_`;
+
+  // Ausências de MO
+  if (ausencias.length > 0) {
+    t += `\n━━━━━━━━━━━━━━━━━━━━\n👥 *AUSÊNCIAS DE MO (${ausencias.length})*\n`;
+
+    // Faltas
+    const faltas = ausencias.filter(a => a.tipo === "Falta");
+    if (faltas.length) {
+      t += `\n❌ *Faltas (${faltas.length}):*\n`;
+      faltas.forEach(a => {
+        t += `• ${a.nome}`;
+        if (a.mat) t += ` — Mat: ${a.mat}`;
+        t += `\n`;
+      });
+    }
+
+    // Férias
+    const ferias = ausencias.filter(a => a.tipo === "Férias");
+    if (ferias.length) {
+      t += `\n🏖️ *Férias (${ferias.length}):*\n`;
+      ferias.forEach(a => {
+        t += `• ${a.nome}`;
+        if (a.mat) t += ` — Mat: ${a.mat}`;
+        t += `\n`;
+      });
+    }
+
+    // MO Deslocada
+    const deslocadas = ausencias.filter(a => a.tipo === "MO Deslocada");
+    if (deslocadas.length) {
+      t += `\n🔀 *MO Deslocada (${deslocadas.length}):*\n`;
+      deslocadas.forEach(a => {
+        t += `• ${a.nome}`;
+        if (a.mat) t += ` — Mat: ${a.mat}`;
+        if (a.dest) t += ` → ${a.dest}`;
+        t += `\n`;
+      });
+    }
+  }
+
+  t += `\n━━━━━━━━━━━━━━━━━━━━\n_Gerado automaticamente · Monitor V5_`;
   window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(t)}`, "_blank");
 }
 
