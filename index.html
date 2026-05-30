@@ -11,6 +11,8 @@
   <link rel="apple-touch-icon" href="icon-192x192.png">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <title>Monitor Máquinas V5</title>
 </head>
 <body>
@@ -120,18 +122,18 @@
     <div class="filters" id="filters"></div>
 
     <!-- Ações Principais -->
-    <div class="act-grid">
-      <button class="abtn" style="color:#00e676;border-color:#00e67655;" onclick="showAdd()">
-        <span class="ico">➕</span>NOVA MÁQUINA
-      </button>
+    <div class="act-grid" style="grid-template-columns:1fr 1fr;">
       <button class="abtn" style="color:#25D366;border-color:#25D36655;" onclick="enviarWA()">
         <span class="ico">💬</span>ENVIAR AO GRUPO
       </button>
-      <button class="abtn" style="color:#2979ff;border-color:#2979ff55;" onclick="modoTV()">
-        <span class="ico">📺</span>MODO TV
+      <button class="abtn" style="color:#00b0ff;border-color:#00b0ff55;" onclick="gerarImagem()">
+        <span class="ico">📸</span>GERAR IMAGEM
       </button>
-      <button class="abtn" style="color:#ff9100;border-color:#ff910055;grid-column:span 3;" onclick="voltarHome()">
-        <span class="ico">🏠</span>TROCAR GRUPO / HOME
+      <button class="abtn" style="color:#00e676;border-color:#00e67655;" onclick="showAdd()">
+        <span class="ico">➕</span>NOVA MÁQUINA
+      </button>
+      <button class="abtn" style="color:#ff9100;border-color:#ff910055;" onclick="voltarHome()">
+        <span class="ico">🏠</span>TROCAR GRUPO
       </button>
     </div>
 
@@ -140,11 +142,14 @@
       <button class="abtn" style="color:#ff9100;border-color:#ff910055;" onclick="zerarStatus()">
         <span class="ico">🔄</span>ZERAR STATUS
       </button>
-      <button class="abtn" style="color:#78909c;border-color:#78909c55;" onclick="exportCSV()">
-        <span class="ico">📊</span>EXPORTAR CSV
+      <button class="abtn" style="color:#e91e63;border-color:#e91e6355;" onclick="exportPDF()">
+        <span class="ico">📄</span>EXPORTAR PDF
       </button>
       <button class="abtn" style="color:#ff1744;border-color:#ff174455;" onclick="limparTudo()">
         <span class="ico">🗑️</span>LIMPAR TUDO
+      </button>
+      <button class="abtn" style="color:#e040fb;border-color:#e040fb55;grid-column:span 3;" onclick="showAusencias()">
+        <span class="ico">👥</span>AUSÊNCIAS (<span id="cnt-aus">0</span>)
       </button>
     </div>
 
@@ -172,6 +177,9 @@
     </div>
   </div>
 </div>
+
+<!-- DASHBOARD PARA IMAGEM/PDF (oculto) -->
+<div id="dash-img" style="display:none;position:fixed;left:-9999px;top:0;width:480px;background:#0a0a0a;padding:24px;font-family:monospace;"></div>
 
 <!-- MODAL: NOVA MÁQUINA -->
 <div class="overlay" id="mod-add">
@@ -234,6 +242,46 @@
     <div class="mbtns">
       <button class="mcancel" onclick="closeOv('mod-cfg')">CANCELAR</button>
       <button class="mconfirm" onclick="saveCfg()">SALVAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: AUSÊNCIAS -->
+<div class="overlay" id="mod-aus">
+  <div class="mbox" onclick="event.stopPropagation()" style="max-height:85vh;overflow-y:auto;">
+    <div class="mtitle" style="color:#e040fb;">👥 AUSÊNCIAS</div>
+
+    <!-- Lista de ausências registradas -->
+    <div id="aus-list" style="margin-bottom:16px;"></div>
+
+    <!-- Formulário para adicionar -->
+    <div style="border-top:1px solid #2a2a2a;padding-top:16px;">
+      <div style="color:#aaa;font-size:10px;letter-spacing:2px;margin-bottom:12px;">ADICIONAR AUSÊNCIA</div>
+      <div class="fg">
+        <label>TIPO</label>
+        <select id="aus-tipo" class="finput" onchange="toggleAusDest()">
+          <option value="Falta">Falta</option>
+          <option value="Férias">Férias</option>
+          <option value="MO Deslocada">MO Deslocada</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>NOME DO COLABORADOR</label>
+        <input type="text" id="aus-nome" class="finput" placeholder="Nome completo...">
+      </div>
+      <div class="fg">
+        <label>MATRÍCULA</label>
+        <input type="text" id="aus-mat" class="finput" placeholder="Ex: 413655" inputmode="numeric">
+      </div>
+      <div class="fg" id="aus-dest-wrap" style="display:none;">
+        <label>DESLOCADA PARA *</label>
+        <input type="text" id="aus-dest" class="finput" placeholder="Ex: Stam1, Linha 5...">
+      </div>
+    </div>
+
+    <div class="mbtns">
+      <button class="mcancel" onclick="closeOv('mod-aus')">FECHAR</button>
+      <button class="mconfirm" style="background:linear-gradient(135deg,#e040fb,#9c27b0);color:#fff;" onclick="addAusencia()">+ ADICIONAR</button>
     </div>
   </div>
 </div>
