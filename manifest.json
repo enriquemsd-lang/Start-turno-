@@ -1,6 +1,6 @@
 {
-  "name": "Monitor Máquinas V5 - Controle de Produção",
-  "short_name": "MonitorV5",
+  "name": "Monitor Máquinas V10- Controle de Produção",
+  "short_name": "Monitor10",
   "description": "Sistema de monitoramento de máquinas em tempo real com controle de produção",
   "start_url": "index.html",
   "display": "standalone",
