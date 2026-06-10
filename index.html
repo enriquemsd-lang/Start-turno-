@@ -357,7 +357,18 @@ function iso2pt(s){if(!s||s.indexOf("-")<0)return"";var p=s.split("-");return p[
 function pt2iso(s){if(!s||s.indexOf("/")<0)return"";var p=s.split("/");return p[2]+"-"+p[1]+"-"+p[0];}
 function tstr(){return new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});}
 function nid(){if(!mqs.length)return 1;return Math.max.apply(null,mqs.map(function(m){return m.id;}))+1;}
-function mkBase(g){var l=GRP_DEF[g]||[];return l.map(function(x,i){return{id:i+1,cod:x[0],nome:x[1],status:"Produzindo",obs:"",paradaAt:null};});}
+function mkBase(g){
+  var l=[];
+  if(!g){
+    // Todos os grupos: combina todas as maquinas
+    Object.keys(GRP_DEF).forEach(function(grp){
+      GRP_DEF[grp].forEach(function(x){l.push(x);});
+    });
+  } else {
+    l=GRP_DEF[g]||[];
+  }
+  return l.map(function(x,i){return{id:i+1,cod:x[0],nome:x[1],status:"Produzindo",obs:"",paradaAt:null};});
+}
 function storKey(){return"mmv5g_"+(cfg.grupo||"todos");}
 function ausKey(){return"mmv5a_"+(cfg.grupo||"todos")+"_"+(cfg.data||"");}
 
@@ -487,11 +498,13 @@ function delM(id){mqs=mqs.filter(function(m){return m.id!==id;});dd=null;saveMqs
 function zerarStatus(){confirm2("Zerar TODOS os status para Produzindo?",function(){mqs.forEach(function(m){m.status="Produzindo";m.obs="";m.paradaAt=null;});saveMqs();rAll();toast("✅ Status zerado!");});}
 function limparTudo(){confirm2("Remover TODAS as máquinas?",function(){mqs=[];saveMqs();rAll();toast("🗑️ Lista limpa!");});}
 function restaurarPadrao(){
-  var g=cfg.grupo||"";var def=GRP_DEF[g];
-  if(!def||!def.length){toast("⚠️ Sem padrão para este grupo");return;}
-  confirm2("Restaurar "+def.length+" máquinas do grupo \""+g+"\"?",function(){
+  var g=cfg.grupo||"";
+  var base=mkBase(g);
+  if(!base.length){toast("⚠️ Sem máquinas definidas");return;}
+  var label=g||"Todos os grupos";
+  confirm2("Restaurar "+base.length+" máquinas de \""+label+"\"?",function(){
     var ex={};mqs.forEach(function(m){ex[m.cod]={status:m.status,obs:m.obs,paradaAt:m.paradaAt};});
-    mqs=mkBase(g).map(function(m){var e=ex[m.cod];if(e)return Object.assign({},m,{status:e.status,obs:e.obs,paradaAt:e.paradaAt});return m;});
+    mqs=base.map(function(m){var e=ex[m.cod];if(e)return Object.assign({},m,{status:e.status,obs:e.obs,paradaAt:e.paradaAt});return m;});
     saveMqs();rAll();toast("✅ "+mqs.length+" máquinas carregadas!");
   });
 }
@@ -542,7 +555,7 @@ function delAus(i){aus.splice(i,1);saveAus();renderAusencias();rHdr();}
 // ══════════════════════ WHATSAPP ══════════════════════════════
 function enviarWA(){
   var c=getCnt();
-  var t="🏭 *MONITOR DE MÁQUINAS V10*\n";
+  var t="🏭 *MONITOR DE MÁQUINAS V5*\n";
   if(cfg.grupo)t+="🏢 *Grupo:* "+cfg.grupo+"\n";
   t+="📅 *Data:* "+cfg.data+" | *Turno:* "+cfg.turno;
   if(cfg.resp)t+="\n👤 *Responsável:* "+cfg.resp;
